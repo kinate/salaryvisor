@@ -1,4 +1,20 @@
-import type { MetaFunction } from "@remix-run/cloudflare";
+import { type MetaFunction, type LoaderFunctionArgs, json } from "@remix-run/cloudflare";
+import { Link, useLoaderData } from "@remix-run/react";
+
+interface Salary {
+    id: number,
+    sector:string,
+    general_code:string,
+    code_category:string,
+    salary_code:string,
+    salary:string,
+    year:string,
+    desc:string,
+    status:string,
+    created_at:string,
+    updated_at:string,
+}
+
 
 export const meta: MetaFunction = () => {
   return [
@@ -10,31 +26,32 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+export async function loader({context}: LoaderFunctionArgs) {
+  const env = context.cloudflare.env;
+  const {results} = await env.DB.prepare("SELECT * from salaries").all();
+  return json(results)
+}
+
 export default function Index() {
+
+  const salaries = useLoaderData<Salary[]>();
   return (
     <div className="font-sans p-4">
-      <h1 className="text-3xl">Welcome to Remix on Cloudflare</h1>
+      <h1 className="text-3xl">Welcome to a bloke sarali advansi</h1>
       <ul className="list-disc mt-4 pl-6 space-y-2">
-        <li>
-          <a
-            className="text-blue-700 underline visited:text-purple-900"
-            target="_blank"
-            href="https://remix.run/docs"
-            rel="noreferrer"
-          >
-            Remix Docs
-          </a>
-        </li>
-        <li>
-          <a
-            className="text-blue-700 underline visited:text-purple-900"
-            target="_blank"
-            href="https://developers.cloudflare.com/pages/framework-guides/deploy-a-remix-site/"
-            rel="noreferrer"
-          >
-            Cloudflare Pages Docs - Remix guide
-          </a>
-        </li>
+        {
+          salaries.map(salary=>(     <li key={salary.id}>
+            <Link
+              className="text-blue-700 underline visited:text-purple-900"
+              to={`salaries/${salary.id}`}
+              rel="noreferrer"
+            >
+              {salary.salary_code} - {salary.sector}
+            </Link>
+          </li>))
+        }
+   
+     
       </ul>
     </div>
   );
